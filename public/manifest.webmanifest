@@ -1,0 +1,10 @@
+{
+  "name": "St. Catherine Catholic Church",
+  "short_name": "St. Catherine",
+  "description": "Watch live Mass, share prayer intentions, give, and stay connected.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf7f2",
+  "theme_color": "#7c2d3a",
+  "icons": []
+}
