@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LiveChat } from "@/components/site/live-chat";
 import { useAuth, displayName } from "@/components/auth/auth-provider";
-import { useLiveConfig } from "@/lib/use-live";
+import { useLiveConfig, useLiveViewers } from "@/lib/use-live";
 import { type LiveConfig } from "@/lib/data";
 
 const LOGO = "/brand/logo.png";
@@ -222,12 +222,13 @@ function MobileMenu({ onClose, onWatch }: { onClose: () => void; onWatch: () => 
 }
 
 function WatchView({ live, onClose }: { live?: LiveConfig | null; onClose: () => void }) {
+  const viewers = useLiveViewers(live?.is_live);
   return (
     <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "tween", ease: [0.22, 1, 0.36, 1], duration: 0.38 }}
-      className="fixed inset-0 z-[80] flex flex-col bg-[#0b0f13]">
+      className="fixed inset-0 z-[80] flex flex-col bg-[#080e15]">
       <div className="flex items-center gap-3 px-4 pb-2.5 pt-safe text-white">
         <button onClick={onClose} aria-label="Back to feed" className="grid h-10 w-10 place-items-center"><ChevronLeft className="h-6 w-6" /></button>
-        <div><b className="text-sm font-semibold">Back to feed</b><small className="block text-[11px] text-slate-400">{live?.viewers ? `Live · ${live.viewers} watching` : "Live now"}</small></div>
+        <div><b className="text-sm font-semibold">Back to feed</b><small className="block text-[11px] text-slate-400">{live?.is_live ? (viewers != null && viewers > 0 ? `Live · ${viewers} watching` : "Live now") : "Offline"}</small></div>
       </div>
       <div className="relative aspect-video w-full bg-black">
         {live?.embed_url ? (
@@ -235,7 +236,9 @@ function WatchView({ live, onClose }: { live?: LiveConfig | null; onClose: () =>
         ) : (
           <img src={live?.poster_url || INTERIOR} alt="" className="h-full w-full object-cover opacity-90" />
         )}
-        <span className="live-chip absolute left-2.5 top-2.5 px-2 py-1 text-[10px] font-bold backdrop-blur-sm"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />LIVE</span>
+        {live?.is_live && (
+          <span className="live-chip absolute left-2.5 top-2.5 rounded-full px-2 py-1 text-[10px] font-bold backdrop-blur-sm"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />LIVE</span>
+        )}
       </div>
       <div className="flex items-center gap-3 border-b border-[#1e262f] bg-[#12181f] px-4 py-3.5 text-white">
         <RotateCw className="h-6 w-6 flex-none text-sky-400" />

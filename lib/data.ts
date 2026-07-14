@@ -34,7 +34,6 @@ export type LiveConfig = {
   is_live: boolean;
   title: string;
   subtitle: string;
-  viewers: number; // legacy — no longer displayed; removed in a later task
   embed_url: string | null;
   poster_url: string | null;
   session_started_at: string | null;

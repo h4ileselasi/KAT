@@ -8,6 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useSite } from "@/components/site/shell";
 import { useAuth, displayName } from "@/components/auth/auth-provider";
+import { useLiveViewers } from "@/lib/use-live";
+import { useCountdown } from "@/components/site/broadcast";
+import { FadeUp } from "@/components/site/motion";
 import {
   fetchAnnouncements, fetchEvents, fetchPrayers, lightCandle, lightAnnouncementCandle,
   type Announcement, type EventItem, type Prayer, type LiveConfig,
@@ -44,8 +47,10 @@ export function StoryRow() {
       </button>
       {shortcuts.map((s) => (
         <a key={s.l} href={s.href} className="w-[68px] flex-none text-center">
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary-soft ring-1 ring-inset ring-primary/15">
-            <span className="h-7 w-7 bg-primary-deep" style={maskStyle(s.icon)} aria-hidden />
+          <span className="story-ring mx-auto grid h-16 w-16 place-items-center rounded-full p-[2.5px]">
+            <span className="grid h-full w-full place-items-center rounded-full border-[3px] border-background bg-primary-soft">
+              <span className="h-7 w-7 bg-primary-deep" style={maskStyle(s.icon)} aria-hidden />
+            </span>
           </span>
           <span className="mt-1.5 block truncate text-[10.5px] text-muted-foreground">{s.l}</span>
         </a>
@@ -56,22 +61,30 @@ export function StoryRow() {
 
 export function LiveCard() {
   const { live, openWatch } = useSite();
+  const viewers = useLiveViewers(live?.is_live);
+  const next = useCountdown(live?.is_live ? null : live?.schedule);
   return (
-    <button onClick={openWatch} className="relative mb-4 block h-[210px] w-full overflow-hidden bg-black text-left lg:hidden">
-      <img src={live?.poster_url || INTERIOR} alt="" className="h-full w-full object-cover" />
-      <span className="absolute inset-0 bg-gradient-to-b from-black/10 to-[#091420]/75" />
-      <span className="live-chip absolute left-3 top-3 px-2.5 py-1.5 text-[10.5px] font-bold tracking-wide backdrop-blur-sm">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />LIVE
-      </span>
-      {!!live?.viewers && (
-        <span className="num absolute right-3 top-3 bg-black/50 px-2.5 py-1.5 text-[11px] font-medium text-white backdrop-blur-sm">◉ {live.viewers}</span>
-      )}
-      <span className="absolute left-1/2 top-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-[1.5px] border-white/60 bg-white/20 pl-1 text-white backdrop-blur"><Play className="h-6 w-6" fill="currentColor" /></span>
-      <span className="absolute inset-x-4 bottom-3 text-white">
-        <b className="block text-[15px] font-semibold">{live?.title || "Sunday Holy Mass"}</b>
-        <small className="text-[11.5px] text-slate-300">Tap to watch · {live?.subtitle}</small>
-      </span>
-    </button>
+    <div className={`mb-4 lg:hidden ${live?.is_live ? "gradient-frame-live" : ""}`}>
+      <button onClick={openWatch} className="relative block h-[210px] w-full overflow-hidden bg-black text-left">
+        <img src={live?.poster_url || INTERIOR} alt="" className="h-full w-full object-cover" />
+        <span className="absolute inset-0 bg-gradient-to-b from-black/10 to-[#091420]/75" />
+        {live?.is_live ? (
+          <span className="live-chip absolute left-3 top-3 rounded-full px-2.5 py-1.5 text-[10.5px] font-bold tracking-wide backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />
+            <span className="num">LIVE{viewers != null && viewers > 0 ? ` · ${viewers}` : ""}</span>
+          </span>
+        ) : next ? (
+          <span className="num absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-1.5 text-[10.5px] font-semibold text-white backdrop-blur-sm">
+            {next.label} · in {next.text}
+          </span>
+        ) : null}
+        <span className="absolute left-1/2 top-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-[1.5px] border-white/60 bg-white/20 pl-1 text-white backdrop-blur"><Play className="h-6 w-6" fill="currentColor" /></span>
+        <span className="absolute inset-x-4 bottom-3 text-white">
+          <b className="block text-[15px] font-semibold">{live?.title || "Sunday Holy Mass"}</b>
+          <small className="text-[11.5px] text-slate-300">Tap to watch · {live?.subtitle}</small>
+        </span>
+      </button>
+    </div>
   );
 }
 
@@ -204,17 +217,25 @@ export function FeedSkeleton() {
 
 export function RightSidebar() {
   const { live, openWatch } = useSite();
+  const viewers = useLiveViewers(live?.is_live);
+  const next = useCountdown(live?.is_live ? null : live?.schedule);
   const events = useQuery({ queryKey: ["events"], queryFn: fetchEvents });
   return (
     <aside className="sticky top-0 hidden h-[100dvh] flex-col gap-4 overflow-auto px-5 py-6 lg:flex">
+      <div className={live?.is_live ? "gradient-frame-live" : ""}>
       <div className="card-surface card-surface-interactive overflow-hidden">
         <button onClick={openWatch} className="relative block h-[172px] w-full overflow-hidden">
           <img src={live?.poster_url || INTERIOR} alt="" className="h-full w-full object-cover" />
           <span className="absolute inset-0 bg-gradient-to-b from-transparent to-[#091420]/75" />
-          <span className="live-chip absolute left-3 top-3 px-2 py-1 text-[10.5px] font-bold backdrop-blur-sm"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" /><span className="num">LIVE{!!live?.viewers && ` · ${live.viewers}`}</span></span>
+          {live?.is_live ? (
+            <span className="live-chip absolute left-3 top-3 rounded-full px-2 py-1 text-[10.5px] font-bold backdrop-blur-sm"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" /><span className="num">LIVE{viewers != null && viewers > 0 ? ` · ${viewers}` : ""}</span></span>
+          ) : next ? (
+            <span className="num absolute left-3 top-3 rounded-full bg-black/50 px-2 py-1 text-[10.5px] font-semibold text-white backdrop-blur-sm">{next.label} · in {next.text}</span>
+          ) : null}
           <span className="absolute inset-x-3.5 bottom-3 text-left text-white"><b className="block text-sm font-semibold">{live?.title || "Sunday Holy Mass"}</b><small className="text-[11.5px] text-slate-300">{live?.subtitle}</small></span>
         </button>
         <button onClick={openWatch} className="glow-primary block w-full bg-primary py-3 text-center text-[13.5px] font-semibold text-primary-foreground hover:bg-primary-deep">Join the service</button>
+      </div>
       </div>
       <div className="card-surface overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3.5"><b className="text-[13px] font-semibold">Upcoming events</b><a href="/events" className="text-xs font-medium text-primary hover:underline">All →</a></div>
@@ -259,10 +280,10 @@ export function HomeFeed() {
       </Link>
       {loading ? <FeedSkeleton /> : (
         <div className="space-y-4">
-          {announcements.data?.slice(0, 2).map((a) => <AnnouncementPost key={a.id} item={a} />)}
-          {prayers.data?.[0] && <PrayerPost item={prayers.data[0]} />}
-          {announcements.data?.slice(2, 3).map((a) => <AnnouncementPost key={a.id} item={a} />)}
-          {prayers.data?.slice(1, 3).map((p) => <PrayerPost key={p.id} item={p} />)}
+          {announcements.data?.slice(0, 2).map((a, i) => <FadeUp key={a.id} delay={Math.min(i * 0.06, 0.3)}><AnnouncementPost item={a} /></FadeUp>)}
+          {prayers.data?.[0] && <FadeUp delay={0.12}><PrayerPost item={prayers.data[0]} /></FadeUp>}
+          {announcements.data?.slice(2, 3).map((a) => <FadeUp key={a.id} delay={0.18}><AnnouncementPost item={a} /></FadeUp>)}
+          {prayers.data?.slice(1, 3).map((p, i) => <FadeUp key={p.id} delay={Math.min(0.24 + i * 0.06, 0.3)}><PrayerPost item={p} /></FadeUp>)}
         </div>
       )}
     </div>
