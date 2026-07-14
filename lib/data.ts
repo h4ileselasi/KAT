@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import type { ServiceTime } from "@/lib/live-utils";
 
 export type Announcement = {
   id: number;
@@ -33,9 +34,12 @@ export type LiveConfig = {
   is_live: boolean;
   title: string;
   subtitle: string;
-  viewers: number;
+  viewers: number; // legacy — no longer displayed; removed in a later task
   embed_url: string | null;
   poster_url: string | null;
+  session_started_at: string | null;
+  youtube_playlist_id: string | null;
+  schedule: ServiceTime[] | null;
 };
 
 export type Product = {
@@ -125,12 +129,14 @@ export type ChatMessage = {
   created_at: string;
 };
 
-export async function fetchChat(): Promise<ChatMessage[]> {
-  const { data } = await supabase
+export async function fetchChat(since?: string | null): Promise<ChatMessage[]> {
+  let q = supabase
     .from("chat_messages")
     .select("*")
     .order("created_at", { ascending: true })
-    .limit(100);
+    .limit(200);
+  if (since) q = q.gte("created_at", since);
+  const { data } = await q;
   return data ?? [];
 }
 
