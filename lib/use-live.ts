@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import { fetchLive, type LiveConfig } from "@/lib/data";
 
-/* Instant LIVE state: the ["live"] query is pushed fresh rows over Supabase
-   Realtime the moment admin saves, so badges flip without a reload. A slow
-   poll remains as a safety net if the websocket drops. */
-export function useLiveConfig() {
-  const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["live"], queryFn: fetchLive, refetchInterval: 60_000 });
+/* One shared realtime subscription for the whole app, refcounted across every
+   component that calls useLiveConfig(). Supabase channels are keyed by topic —
+   a second `.channel("live-config").on(...)` after subscribe() throws, so the
+   subscription must be a singleton, not per-hook. */
+let configSubscribers = 0;
+let configChannel: ReturnType<typeof supabase.channel> | null = null;
 
-  useEffect(() => {
-    const ch = supabase
+function retainConfigChannel(qc: QueryClient) {
+  configSubscribers++;
+  if (!configChannel) {
+    configChannel = supabase
       .channel("live-config")
       .on(
         "postgres_changes",
@@ -21,9 +23,23 @@ export function useLiveConfig() {
         (payload) => qc.setQueryData(["live"], payload.new as LiveConfig)
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [qc]);
+  }
+  return () => {
+    configSubscribers--;
+    if (configSubscribers <= 0 && configChannel) {
+      supabase.removeChannel(configChannel);
+      configChannel = null;
+    }
+  };
+}
 
+/* Instant LIVE state: the ["live"] query is pushed fresh rows over Supabase
+   Realtime the moment admin saves, so badges flip without a reload. A slow
+   poll remains as a safety net if the websocket drops. */
+export function useLiveConfig() {
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["live"], queryFn: fetchLive, refetchInterval: 60_000 });
+  useEffect(() => retainConfigChannel(qc), [qc]);
   return q;
 }
 
