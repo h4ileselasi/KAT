@@ -39,7 +39,7 @@ export function SiteShell({ children, right }: { children: React.ReactNode; righ
 
   return (
     <Ctx.Provider value={{ live, openWatch: () => setWatchOpen(true) }}>
-      <div className="min-h-[100dvh]">
+      <div className="app-wash min-h-[100dvh]">
         <div className={`mx-auto grid max-w-[1500px] grid-cols-1 ${right ? "lg:grid-cols-[262px_minmax(0,1fr)_340px]" : "lg:grid-cols-[262px_minmax(0,1fr)]"}`}>
           <LeftRail />
           <main className="min-w-0 border-border lg:border-x">
