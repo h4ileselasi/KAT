@@ -30,7 +30,7 @@ Architecture decision: **no session tables.** YouTube supplies viewer count and 
   - `session_started_at timestamptz` — stamped every time the admin toggles LIVE **on**. Defines the current chat session window.
   - `youtube_playlist_id text` — optional; when set, the archive reads this playlist instead of channel uploads.
   - `schedule jsonb` — array of `{ day: 0–6, time: "HH:MM", label: string }` for the weekly service schedule.
-- `chat_messages` added to the `supabase_realtime` publication (realtime INSERT events).
+- `chat_messages` AND `live_stream_config` added to the `supabase_realtime` publication (realtime INSERT events for chat; realtime UPDATE events for instant LIVE state).
 - No destructive changes; all idempotent (`ADD COLUMN IF NOT EXISTS`).
 
 ### Viewer count — real, from YouTube
