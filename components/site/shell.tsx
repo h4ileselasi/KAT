@@ -4,7 +4,6 @@ import { createContext, useContext, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Menu, X, Home, Radio, Sparkles, Store, CalendarDays, Settings, Bell,
@@ -14,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LiveChat } from "@/components/site/live-chat";
 import { useAuth, displayName } from "@/components/auth/auth-provider";
-import { fetchLive, type LiveConfig } from "@/lib/data";
+import { useLiveConfig } from "@/lib/use-live";
+import { type LiveConfig } from "@/lib/data";
 
 const LOGO = "/brand/logo.png";
 const INTERIOR = "/brand/interior.jpg";
@@ -35,7 +35,7 @@ const NAV = [
 export function SiteShell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [watchOpen, setWatchOpen] = useState(false);
-  const { data: live } = useQuery({ queryKey: ["live"], queryFn: fetchLive });
+  const { data: live } = useLiveConfig();
 
   return (
     <Ctx.Provider value={{ live, openWatch: () => setWatchOpen(true) }}>
