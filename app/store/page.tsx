@@ -4,15 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Store as StoreIcon } from "lucide-react";
 import { SiteShell } from "@/components/site/shell";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FadeUp } from "@/components/site/motion";
 import { fetchProducts } from "@/lib/data";
 
 function Content() {
   const q = useQuery({ queryKey: ["products"], queryFn: fetchProducts });
   return (
-    <div className="mx-auto max-w-3xl px-3 pb-32 pt-5 sm:px-6 lg:pb-16">
+    <FadeUp className="mx-auto max-w-3xl px-3 pb-32 pt-5 sm:px-6 lg:pb-16">
       <div className="mb-5 flex items-center gap-3">
         <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary-deep"><StoreIcon className="h-5 w-5" /></span>
-        <div><h1 className="text-2xl font-semibold">St. Catherine Store</h1><p className="text-sm text-muted-foreground">Blessed items. Every purchase supports our ministries.</p></div>
+        <div><h1 className="text-2xl font-semibold tracking-tight">St. Catherine Store</h1><p className="text-sm text-muted-foreground">Blessed items. Every purchase supports our ministries.</p></div>
       </div>
       {q.isLoading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="aspect-[3/4] w-full" />)}</div>
@@ -26,14 +27,14 @@ function Content() {
               ) : <div className="aspect-square w-full bg-secondary" />}
               <div className="p-3">
                 <h3 className="text-sm font-semibold leading-tight">{p.name}</h3>
-                <p className="num mt-1 font-semibold text-primary-deep">GHS {p.price}</p>
+                <p className="num mt-1 font-semibold text-gold">GHS {p.price}</p>
               </div>
             </article>
           ))}
-          {q.data?.length === 0 && <p className="col-span-full text-center text-sm text-muted-foreground">Store items coming soon.</p>}
+          {q.data?.length === 0 && <p className="col-span-full py-10 text-center text-sm text-muted-foreground">Store items coming soon.</p>}
         </div>
       )}
-    </div>
+    </FadeUp>
   );
 }
 

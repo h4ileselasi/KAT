@@ -59,11 +59,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="grid min-h-[100dvh] place-items-center bg-background p-5">
-      <div className="w-full max-w-sm">
+    <div className="app-wash grid min-h-[100dvh] place-items-center p-5">
+      <div className="ambient-stage w-full max-w-sm">
+        <div className="glass-strong border border-border p-6">
         <div className="mb-6 flex flex-col items-center text-center">
           <Image src="/brand/logo.png" alt="" width={88} height={88} className="h-[88px] w-[88px] object-contain" priority />
-          <h1 className="mt-3 text-2xl font-semibold">Welcome</h1>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight">Welcome</h1>
           <p className="text-sm text-muted-foreground">St. Catherine of Siena · Burma Camp</p>
         </div>
 
@@ -100,6 +101,7 @@ export default function LoginPage() {
         <Link href="/" className="mt-6 flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground">
           Continue as guest <ArrowRight className="h-4 w-4" />
         </Link>
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Gift, Smartphone, CreditCard, Lock, Loader2 } from "lucide-react";
 import { SiteShell } from "@/components/site/shell";
 import { Button } from "@/components/ui/button";
+import { FadeUp } from "@/components/site/motion";
 import { useAuth } from "@/components/auth/auth-provider";
 
 const PRESETS = [20, 50, 100, 200];
@@ -40,10 +41,10 @@ function Content() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-3 pb-32 pt-5 sm:px-6 lg:pb-16">
+    <FadeUp className="ambient-warm mx-auto max-w-2xl px-3 pb-32 pt-5 sm:px-6 lg:pb-16">
       <div className="mb-5 bg-primary-ink p-6 text-white shadow-[0_1px_2px_rgba(0,0,0,0.2),0_12px_32px_-16px_hsl(var(--primary-ink)/0.7)]">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-300">Give</p>
-        <h1 className="mt-2 text-2xl font-semibold">Give with a grateful heart</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Give with a grateful heart</h1>
         <p className="mt-1 text-sm text-slate-300">“Each of you should give what you have decided in your heart to give.” — 2 Cor 9:7</p>
       </div>
 
@@ -59,7 +60,7 @@ function Content() {
       <div className="mb-3 mt-2 grid grid-cols-2 gap-3">
         {PRESETS.map((v) => (
           <button key={v} onClick={() => setAmount(v)}
-            className={`num border py-4 text-lg font-bold transition-colors ${amount === v ? "border-primary bg-primary-soft text-primary-deep" : "card-surface"}`}>GHS {v}</button>
+            className={`num border py-4 text-lg font-bold transition-all ${amount === v ? "glow-gold scale-[1.03] border-gold bg-gold-soft text-primary-deep ring-1 ring-gold" : "card-surface"}`}>GHS {v}</button>
         ))}
       </div>
       <input type="number" inputMode="numeric" value={amount} onChange={(e) => setAmount(Math.max(1, +e.target.value || 1))}
@@ -92,7 +93,7 @@ function Content() {
       <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
         <Lock className="h-3.5 w-3.5" /> Secured by Paystack · MoMo, Telecel &amp; card · You choose the method on the next screen.
       </p>
-    </div>
+    </FadeUp>
   );
 }
 

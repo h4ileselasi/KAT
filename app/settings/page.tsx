@@ -4,15 +4,16 @@ import Link from "next/link";
 import { Settings as SettingsIcon, ChevronRight, LogIn, LogOut } from "lucide-react";
 import { SiteShell } from "@/components/site/shell";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { FadeUp } from "@/components/site/motion";
 import { useAuth, displayName } from "@/components/auth/auth-provider";
 
 function Content() {
   const { user, loading, signOut } = useAuth();
   return (
-    <div className="mx-auto max-w-2xl px-3 pb-32 pt-5 sm:px-6 lg:pb-16">
+    <FadeUp className="mx-auto max-w-2xl px-3 pb-32 pt-5 sm:px-6 lg:pb-16">
       <div className="mb-5 flex items-center gap-3">
         <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary-deep"><SettingsIcon className="h-5 w-5" /></span>
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
       </div>
 
       {/* Account */}
@@ -52,7 +53,7 @@ function Content() {
           Watch live Mass, share intentions, give, and stay connected.
         </p>
       </div>
-    </div>
+    </FadeUp>
   );
 }
 
