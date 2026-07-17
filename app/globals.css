@@ -215,6 +215,64 @@
     border: 1px solid hsl(var(--destructive) / 0.3);
     color: hsl(var(--destructive));
   }
+
+  /* ---- 2026 bold pass ---- */
+
+  /* Faint brand-gradient wash so the app background never reads flat. */
+  .app-wash {
+    background:
+      radial-gradient(55% 38% at 10% 0%, hsl(var(--primary) / 0.06), transparent 70%),
+      radial-gradient(45% 32% at 90% 6%, hsl(var(--gold) / 0.05), transparent 70%),
+      hsl(var(--background));
+  }
+
+  /* Ambient stage: blurred colored light behind a hero element (pure CSS). */
+  .ambient-stage { position: relative; isolation: isolate; }
+  .ambient-stage::before {
+    content: ""; position: absolute; inset: -12% -18%; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(42% 55% at 22% 18%, hsl(var(--primary) / 0.32), transparent 70%),
+      radial-gradient(38% 48% at 78% 30%, hsl(var(--gold) / 0.16), transparent 70%),
+      radial-gradient(50% 60% at 55% 92%, hsl(var(--primary-deep) / 0.22), transparent 72%);
+    filter: blur(48px);
+  }
+  /* Warm variant (prayer wall): candle-light instead of broadcast blue. */
+  .ambient-warm { position: relative; isolation: isolate; }
+  .ambient-warm::before {
+    content: ""; position: absolute; inset: -12% -18%; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(45% 55% at 30% 20%, hsl(var(--gold) / 0.22), transparent 70%),
+      radial-gradient(40% 50% at 75% 70%, hsl(28 70% 55% / 0.12), transparent 70%);
+    filter: blur(42px);
+  }
+
+  /* Animated gradient frame — wrap an element, give the wrapper p-[2px].
+     -live variant runs hotter (destructive red joins the sweep). */
+  @keyframes gradient-drift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .gradient-frame {
+    padding: 2px;
+    background: linear-gradient(120deg, hsl(var(--primary)), hsl(var(--gold)), hsl(var(--primary-deep)), hsl(var(--primary)));
+    background-size: 300% 300%;
+    animation: gradient-drift 7s ease-in-out infinite;
+  }
+  .gradient-frame-live {
+    padding: 2px;
+    background: linear-gradient(120deg, hsl(var(--destructive)), hsl(var(--gold)), hsl(var(--primary)), hsl(var(--destructive)));
+    background-size: 300% 300%;
+    animation: gradient-drift 5s ease-in-out infinite;
+  }
+
+  /* Instagram-style conic ring for the story row. */
+  .story-ring {
+    background: conic-gradient(from 210deg, hsl(var(--primary)), hsl(var(--gold)), hsl(var(--primary-deep)), hsl(var(--primary)));
+  }
+
+  /* Media hover-zoom (gallery, store). Pair with overflow-hidden on the parent. */
+  .zoom-media img { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+  .zoom-media:hover img { transform: scale(1.05); }
 }
 
 @media (prefers-reduced-motion: reduce) {

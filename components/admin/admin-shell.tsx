@@ -7,9 +7,8 @@ import {
   LayoutDashboard, Radio, Megaphone, CalendarDays, ShoppingBag, Sparkles,
   Settings, Search, LogOut, ExternalLink, Image as ImageIcon, HandCoins,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { fetchLive } from "@/lib/data";
+import { useLiveConfig } from "@/lib/use-live";
 
 const NAV = [
   { section: "Overview", items: [
@@ -97,7 +96,7 @@ export function AdminShell({ children, title = "Dashboard" }: { children: React.
 }
 
 function LiveStatusChip() {
-  const { data: live } = useQuery({ queryKey: ["live"], queryFn: fetchLive, refetchInterval: 15000 });
+  const { data: live } = useLiveConfig();
   const on = !!live?.is_live;
   return on ? (
     <Link href="/admin/live" className="flex items-center gap-2 border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-[12px] font-semibold text-red-600 dark:text-red-300">

@@ -198,3 +198,29 @@ ALTER TABLE gallery ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Anyone can read gallery" ON gallery;
 CREATE POLICY "Anyone can read gallery" ON gallery FOR SELECT USING (true);
 -- Admin writes via the service role (bypasses RLS).
+
+-- ============================================================
+-- LIVE SESSIONS (2026-07-14): session-scoped chat, schedule,
+-- YouTube archive + realtime for instant LIVE state and chat.
+-- ============================================================
+ALTER TABLE live_stream_config ADD COLUMN IF NOT EXISTS session_started_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE live_stream_config ADD COLUMN IF NOT EXISTS youtube_playlist_id TEXT;
+ALTER TABLE live_stream_config ADD COLUMN IF NOT EXISTS schedule JSONB DEFAULT '[]'::jsonb;
+
+-- Realtime: postgres_changes events for chat inserts + live config updates.
+-- Publication membership is not idempotent via ADD TABLE, so guard each one.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'chat_messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'live_stream_config'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE live_stream_config;
+  END IF;
+END $$;

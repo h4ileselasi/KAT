@@ -3,35 +3,71 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Send } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 import { useAuth, displayName } from "@/components/auth/auth-provider";
+import { useLiveConfig } from "@/lib/use-live";
 import { fetchChat, postChat, type ChatMessage } from "@/lib/data";
 
-/* Live service chat. Messages are stored in Supabase and polled every 4s so
-   everyone (guest or signed-in) sees new messages appear near-instantly.
-   Sending is optimistic. `dark` styles it for the dark WatchView overlay. */
+/* Live service chat. Realtime delivery over Supabase (a slow poll remains as
+   a safety net), scoped to the current service: keyed by session_started_at
+   so every go-live starts a fresh room. Sending is optimistic. `dark` styles
+   it for the dark watch surfaces. */
 export function LiveChat({ dark = false }: { dark?: boolean }) {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [text, setText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const { data: live } = useLiveConfig();
+  const since = live?.session_started_at ?? null;
+  const chatKey = ["chat", since ?? "all"] as const;
+
   const chat = useQuery({
-    queryKey: ["chat"],
-    queryFn: fetchChat,
-    refetchInterval: 4000, // near-live without extra realtime setup
+    queryKey: chatKey,
+    queryFn: () => fetchChat(since),
+    refetchInterval: 30_000, // safety net; realtime does the real work
   });
+
+  // Realtime delivery. Dedupe against optimistic entries (temp id = Date.now()).
+  // Channel name is unique per mount: two LiveChat instances can be up at once
+  // (/live page + WatchView overlay) and Supabase channels are keyed by topic.
+  useEffect(() => {
+    const ch = supabase
+      .channel(`live-chat-${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_messages" },
+        (payload) => {
+          const row = payload.new as ChatMessage;
+          qc.setQueryData<ChatMessage[]>(chatKey, (old = []) => {
+            if (old.some((m) => m.id === row.id)) return old;
+            const tempIdx = old.findIndex(
+              (m) => m.id > 1e12 && m.name === row.name && m.message === row.message
+            );
+            if (tempIdx >= 0) {
+              const next = [...old];
+              next[tempIdx] = row;
+              return next;
+            }
+            return [...old, row];
+          });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qc, since]);
 
   const send = useMutation({
     mutationFn: (vars: { name: string; message: string }) => postChat(vars.name, vars.message),
     onMutate: async (vars) => {
-      await qc.cancelQueries({ queryKey: ["chat"] });
-      const prev = qc.getQueryData<ChatMessage[]>(["chat"]);
+      await qc.cancelQueries({ queryKey: chatKey });
+      const prev = qc.getQueryData<ChatMessage[]>(chatKey);
       const optimistic: ChatMessage = { id: Date.now(), name: vars.name, message: vars.message, created_at: new Date().toISOString() };
-      qc.setQueryData<ChatMessage[]>(["chat"], (old) => [...(old ?? []), optimistic]);
+      qc.setQueryData<ChatMessage[]>(chatKey, (old) => [...(old ?? []), optimistic]);
       return { prev };
     },
-    onError: (_e, _v, ctx) => { if (ctx?.prev) qc.setQueryData(["chat"], ctx.prev); },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["chat"] }),
+    onError: (_e, _v, ctx) => { if (ctx?.prev) qc.setQueryData(chatKey, ctx.prev); },
   });
 
   // auto-scroll to newest

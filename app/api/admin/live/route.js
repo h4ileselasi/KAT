@@ -17,6 +17,17 @@ export async function PATCH(req) {
   delete fields.id; // never let the id be changed
   fields.updated_at = new Date().toISOString();
 
+  // Going live starts a fresh chat session: stamp the transition moment so
+  // the public chat only shows messages from this service onward.
+  const { data: current } = await supabaseAdmin
+    .from("live_stream_config")
+    .select("is_live")
+    .eq("id", 1)
+    .single();
+  if (fields.is_live === true && current && !current.is_live) {
+    fields.session_started_at = new Date().toISOString();
+  }
+
   const { data, error } = await supabaseAdmin
     .from("live_stream_config")
     .update(fields)

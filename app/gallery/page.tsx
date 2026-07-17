@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { X, Image as ImageIcon } from "lucide-react";
 import { SiteShell } from "@/components/site/shell";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FadeUp } from "@/components/site/motion";
 import { fetchGallery } from "@/lib/data";
 
 function Content() {
@@ -13,10 +14,10 @@ function Content() {
   const photos = q.data ?? [];
 
   return (
-    <div className="pb-32 pt-5 lg:pb-16">
+    <FadeUp className="pb-32 pt-5 lg:pb-16">
       <div className="mb-4 flex items-center gap-3 px-4 sm:px-6">
         <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary-deep"><ImageIcon className="h-5 w-5" /></span>
-        <div><h1 className="text-2xl font-semibold">Gallery</h1><p className="text-sm text-muted-foreground">Moments from parish life.</p></div>
+        <div><h1 className="text-2xl font-semibold tracking-tight">Gallery</h1><p className="text-sm text-muted-foreground">Moments from parish life.</p></div>
       </div>
 
       {q.isLoading ? (
@@ -28,6 +29,9 @@ function Content() {
           {photos.map((p) => (
             <button key={p.id} onClick={() => setOpen(p.image_url)} className="group relative aspect-square overflow-hidden bg-secondary">
               <img src={p.image_url} alt={p.caption ?? ""} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              {p.caption && (
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary-ink/80 to-transparent px-3 pb-2 pt-8 text-left text-[12px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">{p.caption}</span>
+              )}
             </button>
           ))}
         </div>
@@ -39,7 +43,7 @@ function Content() {
           <img src={open} alt="" className="max-h-[85vh] max-w-full object-contain" />
         </div>
       )}
-    </div>
+    </FadeUp>
   );
 }
 

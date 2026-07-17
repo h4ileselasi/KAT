@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
 import { SiteShell } from "@/components/site/shell";
 import { PrayerPost, FeedSkeleton } from "@/components/site/feed";
+import { FadeUp } from "@/components/site/motion";
 import { Button } from "@/components/ui/button";
 import { useAuth, displayName } from "@/components/auth/auth-provider";
 import { fetchPrayers, postPrayer, type Prayer } from "@/lib/data";
@@ -51,11 +52,11 @@ function PrayerContent() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-3 pb-32 pt-5 sm:px-6 lg:pb-16">
+    <FadeUp className="mx-auto max-w-2xl px-3 pb-32 pt-5 sm:px-6 lg:pb-16">
       <div className="mb-5 flex items-center gap-3">
         <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary-deep"><Sparkles className="h-5 w-5" /></span>
         <div>
-          <h1 className="text-2xl font-semibold">Prayer Wall</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Prayer Wall</h1>
           <p className="text-sm text-muted-foreground">Share an intention — no account needed. Light a candle for another.</p>
         </div>
       </div>
@@ -64,7 +65,8 @@ function PrayerContent() {
         “Again I say to you, if two of you agree on earth about anything they ask, it will be done for them by my Father.” — Matthew 18:19
       </p>
 
-      <form onSubmit={submit} className="card-surface mb-7 space-y-3 p-4">
+      <div className="ambient-warm mb-7">
+      <form onSubmit={submit} className="card-surface space-y-3 p-4">
         <label className="text-sm font-semibold">Share a Mass intention</label>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={500}
           placeholder="Lord, I pray for…"
@@ -79,14 +81,15 @@ function PrayerContent() {
         <Button type="submit" disabled={post.isPending} className="glow-primary">{post.isPending ? "Posting…" : "Post intention"}</Button>
         <p className="text-xs text-muted-foreground">Please keep intentions reverent — the parish office may remove anything inappropriate.</p>
       </form>
+      </div>
 
       {prayers.isLoading ? <FeedSkeleton /> : (
         <div className="space-y-4">
           {(prayers.data ?? []).map((p) => <PrayerPost key={p.id} item={p} />)}
-          {prayers.data?.length === 0 && <p className="text-center text-sm text-muted-foreground">Be the first to share an intention.</p>}
+          {prayers.data?.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">Be the first to share an intention.</p>}
         </div>
       )}
-    </div>
+    </FadeUp>
   );
 }
 
